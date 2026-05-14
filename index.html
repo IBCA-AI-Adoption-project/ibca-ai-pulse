@@ -1,0 +1,683 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IBCA AI Pulse</title>
+    <style>
+        :root {
+            --ibca-green: #008542; /* Primary IBCA Green */
+            --ibca-green-light: #e6f3ec;
+            --ibca-dark: #333333;
+            --ibca-gray: #f4f7f6;
+            --ibca-border: #d1d9d6;
+            --text-main: #2d3748;
+            --white: #ffffff;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+
+        body {
+            background-color: var(--ibca-gray);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+
+        /* Container & Card */
+        #survey-container {
+            background: var(--white);
+            width: 100%;
+            max-width: 650px;
+            min-height: 500px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+
+        /* Header & Progress */
+        header {
+            padding: 30px 40px 10px;
+        }
+
+
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background: var(--ibca-green-light);
+            border-radius: 10px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+
+
+        #progress-bar {
+            height: 100%;
+            background: var(--ibca-green);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+
+        .step-indicator {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 8px;
+            font-weight: 600;
+        }
+
+
+        /* Screens */
+        .screen {
+            display: none;
+            padding: 20px 40px 40px;
+            flex-direction: column;
+            flex-grow: 1;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+
+        .screen.active {
+            display: flex;
+        }
+
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+
+        h1 {
+            color: var(--ibca-green);
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+            line-height: 1.1;
+        }
+
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--ibca-dark);
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            opacity: 0.85;
+            letter-spacing: 0.01em;
+        }
+
+
+        p.description {
+            font-size: 1.05rem;
+            line-height: 1.6;
+            color: #555;
+            margin-bottom: 2rem;
+        }
+
+
+        /* Question Elements */
+        .question-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--ibca-dark);
+        }
+
+
+        .options-grid {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 2rem;
+        }
+
+
+        .option-card {
+            background: var(--white);
+            border: 2px solid var(--ibca-border);
+            border-radius: 12px;
+            padding: 16px 20px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 1.05rem;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+
+        .option-card:hover {
+            border-color: var(--ibca-green);
+            background: var(--ibca-green-light);
+        }
+
+
+        .option-card.selected {
+            border-color: var(--ibca-green);
+            background: var(--ibca-green-light);
+            font-weight: 600;
+        }
+
+
+        .option-card.selected::after {
+            content: '✓';
+            position: absolute;
+            right: 20px;
+            color: var(--ibca-green);
+            font-weight: bold;
+        }
+
+
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid var(--ibca-border);
+            border-radius: 12px;
+            font-size: 1rem;
+            min-height: 120px;
+            resize: vertical;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+
+        textarea:focus {
+            border-color: var(--ibca-green);
+        }
+
+
+        /* Navigation Buttons */
+        .nav-footer {
+            padding: 20px 40px 40px;
+            display: flex;
+            gap: 15px;
+            margin-top: auto;
+        }
+
+
+        button {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+
+        .btn-primary {
+            background: var(--ibca-green);
+            color: white;
+            flex-grow: 2;
+        }
+
+
+        .btn-primary:hover:not(:disabled) {
+            background: #006b35;
+            box-shadow: 0 4px 12px rgba(0, 133, 66, 0.2);
+        }
+
+
+        .btn-secondary {
+            background: var(--ibca-gray);
+            color: var(--ibca-dark);
+            flex-grow: 1;
+            border: 1px solid var(--ibca-border);
+        }
+
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #e2e8f0;
+        }
+
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+
+        /* Success Icon */
+        .success-tick {
+            font-size: 5rem;
+            color: var(--ibca-green);
+            margin-bottom: 20px;
+            display: block;
+            line-height: 1;
+        }
+
+
+        /* Review List */
+        .review-list {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+
+        .review-item {
+            padding: 10px 0;
+            border-bottom: 1px solid var(--ibca-gray);
+        }
+
+
+        .review-q {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+
+        .review-a {
+            font-weight: 600;
+            color: var(--ibca-dark);
+        }
+
+
+        /* Loading & Messages */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--ibca-green);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+
+        .error-box {
+            background: #fee2e2;
+            color: #b91c1c;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            display: none;
+        }
+
+
+        /* Accessibility/Focus */
+        button:focus, .option-card:focus {
+            outline: 3px solid rgba(0, 133, 66, 0.3);
+        }
+    </style>
+</head>
+<body>
+
+
+    <div id="survey-container">
+        <header id="header-section" style="display:none;">
+            <div class="progress-container">
+                <div id="progress-bar"></div>
+            </div>
+            <div class="step-indicator" id="step-text">Question 1 of 6</div>
+        </header>
+
+
+        <!-- Welcome Screen -->
+        <div id="screen-welcome" class="screen active">
+            <h1>IBCA AI Pulse</h1>
+            <p class="subtitle">AI Literacy & Sentiment Baseline</p>
+            <p class="description">
+                Help shape the future of AI at IBCA.<br><br>
+                This short pulse check explores how colleagues currently feel about Generative AI and Gemini. Your response will help shape future AI learning, guidance and support.<br><br>
+                <strong>Estimated time: 2 minutes.</strong><br>
+                Please do not include personal, claimant, or case-specific information in your response.
+            </p>
+            <div class="nav-footer" style="padding-left:0; padding-right:0;">
+                <button class="btn-primary" onclick="startSurvey()">Get Started</button>
+            </div>
+        </div>
+
+
+        <!-- Question 1 -->
+        <div id="screen-q1" class="screen">
+            <div class="question-text">How confident are you in your understanding of Generative AI?</div>
+            <div class="options-grid">
+                <div class="option-card" data-val="Very confident" onclick="selectOption(this, 'confidence')">Very confident</div>
+                <div class="option-card" data-val="Somewhat confident" onclick="selectOption(this, 'confidence')">Somewhat confident</div>
+                <div class="option-card" data-val="Neutral" onclick="selectOption(this, 'confidence')">Neutral</div>
+                <div class="option-card" data-val="Not very confident" onclick="selectOption(this, 'confidence')">Not very confident</div>
+                <div class="option-card" data-val="Not confident at all" onclick="selectOption(this, 'confidence')">Not confident at all</div>
+            </div>
+        </div>
+
+
+        <!-- Question 2 -->
+        <div id="screen-q2" class="screen">
+            <div class="question-text">How comfortable do you currently feel using Gemini in your role?</div>
+            <div class="options-grid">
+                <div class="option-card" data-val="Very comfortable" onclick="selectOption(this, 'comfort')">Very comfortable</div>
+                <div class="option-card" data-val="Comfortable" onclick="selectOption(this, 'comfort')">Comfortable</div>
+                <div class="option-card" data-val="Unsure" onclick="selectOption(this, 'comfort')">Unsure</div>
+                <div class="option-card" data-val="Uncomfortable" onclick="selectOption(this, 'comfort')">Uncomfortable</div>
+                <div class="option-card" data-val="Very uncomfortable" onclick="selectOption(this, 'comfort')">Very uncomfortable</div>
+            </div>
+        </div>
+
+
+        <!-- Question 3 -->
+        <div id="screen-q3" class="screen">
+            <div class="question-text">What is your biggest concern about using Generative AI?</div>
+            <div class="options-grid">
+                <div class="option-card" data-val="Accuracy or hallucinations" onclick="selectOption(this, 'concern')">Accuracy or hallucinations</div>
+                <div class="option-card" data-val="Data privacy" onclick="selectOption(this, 'concern')">Data privacy</div>
+                <div class="option-card" data-val="Policy uncertainty" onclick="selectOption(this, 'concern')">Policy uncertainty</div>
+                <div class="option-card" data-val="Making mistakes" onclick="selectOption(this, 'concern')">Making mistakes</div>
+                <div class="option-card" data-val="Lack of knowledge or training" onclick="selectOption(this, 'concern')">Lack of knowledge or training</div>
+                <div class="option-card" data-val="I do not currently have concerns" onclick="selectOption(this, 'concern')">I do not currently have concerns</div>
+                <div class="option-card" data-val="Other" onclick="selectOption(this, 'concern')">Other</div>
+            </div>
+        </div>
+
+
+        <!-- Question 4 -->
+        <div id="screen-q4" class="screen">
+            <div class="question-text">How useful do you think Generative AI could be in your role?</div>
+            <div class="options-grid">
+                <div class="option-card" data-val="Extremely useful" onclick="selectOption(this, 'usefulness')">Extremely useful</div>
+                <div class="option-card" data-val="Useful" onclick="selectOption(this, 'usefulness')">Useful</div>
+                <div class="option-card" data-val="Somewhat useful" onclick="selectOption(this, 'usefulness')">Somewhat useful</div>
+                <div class="option-card" data-val="Not very useful" onclick="selectOption(this, 'usefulness')">Not very useful</div>
+                <div class="option-card" data-val="Not useful at all" onclick="selectOption(this, 'usefulness')">Not useful at all</div>
+            </div>
+        </div>
+
+
+        <!-- Question 5 -->
+        <div id="screen-q5" class="screen">
+            <div class="question-text">Would you be willing to complete a short follow-up pulse check in approximately 3 months to help us measure changes in AI confidence and adoption?</div>
+            <div class="options-grid">
+                <div class="option-card" data-val="Yes" onclick="selectOption(this, 'followUpConsent')">Yes</div>
+                <div class="option-card" data-val="No" onclick="selectOption(this, 'followUpConsent')">No</div>
+            </div>
+        </div>
+
+
+        <!-- Question 6 (Optional Text) -->
+        <div id="screen-q6" class="screen">
+            <div class="question-text">Optional: What support would help you feel more confident using Generative AI or Gemini?</div>
+            <textarea id="supportNeeded" placeholder="Type your thoughts here..."></textarea>
+        </div>
+
+
+        <!-- Final Review -->
+        <div id="screen-review" class="screen">
+            <h1>Review your pulse</h1>
+            <div id="review-content" class="review-list"></div>
+            <div id="error-message" class="error-box"></div>
+        </div>
+
+
+        <!-- Submitting State -->
+        <div id="screen-submitting" class="screen" style="justify-content: center; align-items: center; text-align: center;">
+            <div class="loader"></div>
+            <h3>Submitting your response...</h3>
+            <p>Please wait a moment.</p>
+        </div>
+
+
+        <!-- Thank You -->
+        <div id="screen-thanks" class="screen" style="justify-content: center; align-items: center; text-align: center;">
+            <div class="success-tick">✓</div>
+            <h1>Thank You</h1>
+            <p class="description">
+                Your feedback will help shape future AI learning, support and adoption across IBCA.
+            </p>
+        </div>
+
+
+        <!-- Global Navigation -->
+        <footer id="nav-section" class="nav-footer" style="display:none;">
+            <button id="btn-back" class="btn-secondary" onclick="prevScreen()">Back</button>
+            <button id="btn-next" class="btn-primary" onclick="nextScreen()">Next</button>
+            <button id="btn-submit" class="btn-primary" style="display:none;" onclick="submitSurvey()">Submit</button>
+        </footer>
+    </div>
+
+
+    <script>
+        /* STATE MANAGEMENT */
+        let currentScreenIndex = 0;
+        const screens = [
+            'welcome', 'q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'review', 'submitting', 'thanks'
+        ];
+        
+        const responses = {
+            confidence: null,
+            comfort: null,
+            concern: null,
+            usefulness: null,
+            followUpConsent: null,
+            supportNeeded: ""
+        };
+
+
+        /* NAVIGATION LOGIC */
+        function startSurvey() {
+            goToScreen(1);
+            document.getElementById('header-section').style.display = 'block';
+            document.getElementById('nav-section').style.display = 'flex';
+        }
+
+
+        function goToScreen(index) {
+            // Hide all screens
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            
+            // Show new screen
+            const screenId = 'screen-' + screens[index];
+            document.getElementById(screenId).classList.add('active');
+            
+            currentScreenIndex = index;
+            updateUI();
+        }
+
+
+        function nextScreen() {
+            if (currentScreenIndex < screens.length - 1) {
+                // If it's the review screen, triggers submit via different button
+                if (screens[currentScreenIndex] === 'review') return;
+                
+                // If moving from q6 to review, capture text
+                if (screens[currentScreenIndex] === 'q6') {
+                    responses.supportNeeded = document.getElementById('supportNeeded').value;
+                    populateReview();
+                }
+
+
+                goToScreen(currentScreenIndex + 1);
+            }
+        }
+
+
+        function prevScreen() {
+            if (currentScreenIndex > 1) {
+                goToScreen(currentScreenIndex - 1);
+            }
+        }
+
+
+        function updateUI() {
+            const screenName = screens[currentScreenIndex];
+            
+            // Progress Bar (Screens 1 to 6 are questions)
+            const progress = (Math.min(currentScreenIndex, 6) / 6) * 100;
+            document.getElementById('progress-bar').style.width = progress + '%';
+            
+            if (currentScreenIndex >= 1 && currentScreenIndex <= 6) {
+                document.getElementById('step-text').innerText = `Question ${currentScreenIndex} of 6`;
+                document.getElementById('header-section').style.display = 'block';
+            } else {
+                document.getElementById('header-section').style.display = 'none';
+            }
+
+
+            // Buttons
+            const btnBack = document.getElementById('btn-back');
+            const btnNext = document.getElementById('btn-next');
+            const btnSubmit = document.getElementById('btn-submit');
+            const nav = document.getElementById('nav-section');
+
+
+            btnBack.disabled = (currentScreenIndex <= 1);
+            
+            // Show/Hide Submit Button
+            if (screenName === 'review') {
+                btnNext.style.display = 'none';
+                btnSubmit.style.display = 'flex';
+            } else if (screenName === 'submitting' || screenName === 'thanks') {
+                nav.style.display = 'none';
+            } else {
+                btnNext.style.display = 'flex';
+                btnSubmit.style.display = 'none';
+            }
+
+
+            validateScreen();
+        }
+
+
+        function selectOption(element, field) {
+            // Unselect siblings
+            const parent = element.parentElement;
+            parent.querySelectorAll('.option-card').forEach(card => card.classList.remove('selected'));
+            
+            // Select this one
+            element.classList.add('selected');
+            responses[field] = element.getAttribute('data-val');
+            
+            // Re-validate to enable "Next" button
+            validateScreen();
+        }
+
+
+        function validateScreen() {
+            const screenName = screens[currentScreenIndex];
+            const btnNext = document.getElementById('btn-next');
+            
+            let isValid = true;
+            if (screenName === 'q1' && !responses.confidence) isValid = false;
+            if (screenName === 'q2' && !responses.comfort) isValid = false;
+            if (screenName === 'q3' && !responses.concern) isValid = false;
+            if (screenName === 'q4' && !responses.usefulness) isValid = false;
+            if (screenName === 'q5' && !responses.followUpConsent) isValid = false;
+            // q6 is optional
+
+
+            btnNext.disabled = !isValid;
+        }
+
+
+        function populateReview() {
+            const reviewDiv = document.getElementById('review-content');
+            
+            reviewDiv.innerHTML = `
+                <div class="review-item">
+                    <div class="review-q">Confidence in AI</div>
+                    <div class="review-a">${responses.confidence}</div>
+                </div>
+                <div class="review-item">
+                    <div class="review-q">Comfort using Gemini</div>
+                    <div class="review-a">${responses.comfort}</div>
+                </div>
+                <div class="review-item">
+                    <div class="review-q">Biggest concern</div>
+                    <div class="review-a">${responses.concern}</div>
+                </div>
+                <div class="review-item">
+                    <div class="review-q">Usefulness in role</div>
+                    <div class="review-a">${responses.usefulness}</div>
+                </div>
+                <div class="review-item">
+                    <div class="review-q">Willing to follow-up</div>
+                    <div class="review-a">${responses.followUpConsent}</div>
+                </div>
+                <div class="review-item">
+                    <div class="review-q">Additional support requested</div>
+                    <div class="review-a">${responses.supportNeeded || "None specified"}</div>
+                </div>
+            `;
+        }
+
+
+        /* DATA SUBMISSION */
+        function submitSurvey() {
+            goToScreen(8); // Submitting screen
+
+
+            const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSfxYsAnTbYC5tliXg1PaZoLrd-11wsjicGHJdYa7ktTrno-kA/formResponse";
+
+
+            const form = document.createElement("form");
+            form.action = FORM_URL;
+            form.method = "POST";
+            form.target = "hidden_iframe";
+            form.style.display = "none";
+
+
+            const fields = {
+                "entry.1206601711": responses.confidence || "",
+                "entry.2143954893": responses.comfort || "",
+                "entry.286265625": responses.concern || "",
+                "entry.621624583": responses.usefulness || "",
+                "entry.1849376296": responses.followUpConsent || "",
+                "entry.268264359": responses.supportNeeded || ""
+            };
+
+
+            Object.keys(fields).forEach(function(name) {
+                const input = document.createElement("input");
+                input.type = "hidden";
+                input.name = name;
+                input.value = fields[name];
+                form.appendChild(input);
+            });
+
+
+            let iframe = document.getElementById("hidden_iframe");
+            if (!iframe) {
+                iframe = document.createElement("iframe");
+                iframe.name = "hidden_iframe";
+                iframe.id = "hidden_iframe";
+                iframe.style.display = "none";
+                document.body.appendChild(iframe);
+            }
+
+
+            document.body.appendChild(form);
+            form.submit();
+
+
+            setTimeout(function() {
+                goToScreen(9); // Thanks screen
+            }, 1200);
+        }
+    </script>
+</body>
+</html>
