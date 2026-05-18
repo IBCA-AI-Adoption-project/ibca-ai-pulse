@@ -1,683 +1,1244 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IBCA AI Pulse</title>
-    <style>
-        :root {
-            --ibca-green: #008542; /* Primary IBCA Green */
-            --ibca-green-light: #e6f3ec;
-            --ibca-dark: #333333;
-            --ibca-gray: #f4f7f6;
-            --ibca-border: #d1d9d6;
-            --text-main: #2d3748;
-            --white: #ffffff;
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-
-        body {
-            background-color: var(--ibca-gray);
-            color: var(--text-main);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-            overflow-x: hidden;
-        }
-
-
-        /* Container & Card */
-        #survey-container {
-            background: var(--white);
-            width: 100%;
-            max-width: 650px;
-            min-height: 500px;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            overflow: hidden;
-        }
-
-
-        /* Header & Progress */
-        header {
-            padding: 30px 40px 10px;
-        }
-
-
-        .progress-container {
-            width: 100%;
-            height: 6px;
-            background: var(--ibca-green-light);
-            border-radius: 10px;
-            margin-top: 20px;
-            overflow: hidden;
-        }
-
-
-        #progress-bar {
-            height: 100%;
-            background: var(--ibca-green);
-            width: 0%;
-            transition: width 0.5s ease;
-        }
-
-
-        .step-indicator {
-            font-size: 0.85rem;
-            color: #666;
-            margin-top: 8px;
-            font-weight: 600;
-        }
-
-
-        /* Screens */
-        .screen {
-            display: none;
-            padding: 20px 40px 40px;
-            flex-direction: column;
-            flex-grow: 1;
-            animation: fadeIn 0.4s ease-out;
-        }
-
-
-        .screen.active {
-            display: flex;
-        }
-
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-
-        h1 {
-            color: var(--ibca-green);
-            font-size: 2.2rem;
-            margin-bottom: 0.5rem;
-            line-height: 1.1;
-        }
-
-
-        .subtitle {
-            font-size: 1.1rem;
-            color: var(--ibca-dark);
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-            opacity: 0.85;
-            letter-spacing: 0.01em;
-        }
-
-
-        p.description {
-            font-size: 1.05rem;
-            line-height: 1.6;
-            color: #555;
-            margin-bottom: 2rem;
-        }
-
-
-        /* Question Elements */
-        .question-text {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-            color: var(--ibca-dark);
-        }
-
-
-        .options-grid {
-            display: grid;
-            gap: 12px;
-            margin-bottom: 2rem;
-        }
-
-
-        .option-card {
-            background: var(--white);
-            border: 2px solid var(--ibca-border);
-            border-radius: 12px;
-            padding: 16px 20px;
-            cursor: pointer;
-            transition: var(--transition);
-            font-size: 1.05rem;
-            display: flex;
-            align-items: center;
-            position: relative;
-        }
-
-
-        .option-card:hover {
-            border-color: var(--ibca-green);
-            background: var(--ibca-green-light);
-        }
-
-
-        .option-card.selected {
-            border-color: var(--ibca-green);
-            background: var(--ibca-green-light);
-            font-weight: 600;
-        }
-
-
-        .option-card.selected::after {
-            content: '✓';
-            position: absolute;
-            right: 20px;
-            color: var(--ibca-green);
-            font-weight: bold;
-        }
-
-
-        textarea {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid var(--ibca-border);
-            border-radius: 12px;
-            font-size: 1rem;
-            min-height: 120px;
-            resize: vertical;
-            outline: none;
-            transition: border-color 0.3s;
-        }
-
-
-        textarea:focus {
-            border-color: var(--ibca-green);
-        }
-
-
-        /* Navigation Buttons */
-        .nav-footer {
-            padding: 20px 40px 40px;
-            display: flex;
-            gap: 15px;
-            margin-top: auto;
-        }
-
-
-        button {
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            border: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-
-        .btn-primary {
-            background: var(--ibca-green);
-            color: white;
-            flex-grow: 2;
-        }
-
-
-        .btn-primary:hover:not(:disabled) {
-            background: #006b35;
-            box-shadow: 0 4px 12px rgba(0, 133, 66, 0.2);
-        }
-
-
-        .btn-secondary {
-            background: var(--ibca-gray);
-            color: var(--ibca-dark);
-            flex-grow: 1;
-            border: 1px solid var(--ibca-border);
-        }
-
-
-        .btn-secondary:hover:not(:disabled) {
-            background: #e2e8f0;
-        }
-
-
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-
-        /* Success Icon */
-        .success-tick {
-            font-size: 5rem;
-            color: var(--ibca-green);
-            margin-bottom: 20px;
-            display: block;
-            line-height: 1;
-        }
-
-
-        /* Review List */
-        .review-list {
-            margin-bottom: 20px;
-            text-align: left;
-        }
-
-
-        .review-item {
-            padding: 10px 0;
-            border-bottom: 1px solid var(--ibca-gray);
-        }
-
-
-        .review-q {
-            font-size: 0.9rem;
-            color: #666;
-            margin-bottom: 4px;
-        }
-
-
-        .review-a {
-            font-weight: 600;
-            color: var(--ibca-dark);
-        }
-
-
-        /* Loading & Messages */
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--ibca-green);
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
-        }
-
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-
-        .error-box {
-            background: #fee2e2;
-            color: #b91c1c;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-size: 0.95rem;
-            display: none;
-        }
-
-
-        /* Accessibility/Focus */
-        button:focus, .option-card:focus {
-            outline: 3px solid rgba(0, 133, 66, 0.3);
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IBCA Generative AI Pulse</title>
+  <!-- Tailwind CSS CDN for fluid modern layout -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome for robust modern icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Strict adherence to IBCA Style Guide */
+    body {
+      font-family: 'Arial', 'Calibri', sans-serif;
+      font-size: 16px; /* High accessibility base */
+      line-height: 1.6;
+      text-align: left; /* Always align text to the left */
+      color: #1a1a1a;
+      background-color: #f7f9f6;
+    }
+    
+    /* IBCA Color Palette */
+    :root {
+      --ibca-green: #2D7D46;      /* Brand forest green */
+      --ibca-green-light: #E8F5EC;/* Pale supportive tint */
+      --ibca-purple: #4A154B;     /* Elegant dark purple/eggplant accent */
+      --ibca-purple-light: #F4EFF6;
+      --text-dark: #111827;
+      --text-gray: #4B5563;
+    }
+
+    /* Accessibility high contrast toggle class */
+    body.high-contrast {
+      background-color: #ffffff;
+      color: #000000;
+      --ibca-green: #004d1a;
+      --ibca-purple: #300030;
+    }
+    body.high-contrast .pulse-card {
+      border: 2px solid #000000;
+      box-shadow: none;
+    }
+
+    /* Style Guide: No italics or underlines. Single quotes for initiatives. */
+    em, i, u {
+      font-style: normal !important;
+      text-decoration: none !important;
+    }
+
+    /* Interactive components styling */
+    .btn-primary {
+      background-color: var(--ibca-green);
+      color: #ffffff;
+      transition: all 0.2s ease-in-out;
+    }
+    .btn-primary:hover {
+      background-color: #215c33;
+      transform: translateY(-1px);
+    }
+    .btn-secondary {
+      background-color: #ffffff;
+      color: var(--ibca-green);
+      border: 1px solid var(--ibca-green);
+      transition: all 0.2s ease-in-out;
+    }
+    .btn-secondary:hover {
+      background-color: var(--ibca-green-light);
+    }
+
+    /* Step animations */
+    .step-card {
+      display: none;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+    .step-card.active {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Custom radio/checkbox cards */
+    .option-card {
+      border: 1px solid #e5e7eb;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: left;
+    }
+    .option-card:hover {
+      border-color: var(--ibca-green);
+      background-color: var(--ibca-green-light);
+    }
+    .option-card.selected {
+      border-color: var(--ibca-green);
+      background-color: var(--ibca-green-light);
+      box-shadow: 0 0 0 2px var(--ibca-green);
+    }
+
+    /* Custom Linear Scale circles */
+    .scale-btn {
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #d1d5db;
+      border-radius: 9999px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.2s;
+    }
+    .scale-btn:hover {
+      border-color: var(--ibca-green);
+      background-color: var(--ibca-green-light);
+    }
+    .scale-btn.selected {
+      background-color: var(--ibca-green);
+      color: #ffffff;
+      border-color: var(--ibca-green);
+    }
+
+    /* Custom progress bar */
+    .progress-bar-fill {
+      background-color: var(--ibca-green);
+      transition: width 0.3s ease;
+    }
+
+    /* Hidden iframe for handling Google Form submission natively */
+    #hidden_iframe {
+      display: none;
+    }
+  </style>
 </head>
-<body>
+<body class="min-h-screen flex flex-col justify-between">
 
-
-    <div id="survey-container">
-        <header id="header-section" style="display:none;">
-            <div class="progress-container">
-                <div id="progress-bar"></div>
-            </div>
-            <div class="step-indicator" id="step-text">Question 1 of 6</div>
-        </header>
-
-
-        <!-- Welcome Screen -->
-        <div id="screen-welcome" class="screen active">
-            <h1>IBCA AI Pulse</h1>
-            <p class="subtitle">AI Literacy & Sentiment Baseline</p>
-            <p class="description">
-                Help shape the future of AI at IBCA.<br><br>
-                This short pulse check explores how colleagues currently feel about Generative AI and Gemini. Your response will help shape future AI learning, guidance and support.<br><br>
-                <strong>Estimated time: 2 minutes.</strong><br>
-                Please do not include personal, claimant, or case-specific information in your response.
-            </p>
-            <div class="nav-footer" style="padding-left:0; padding-right:0;">
-                <button class="btn-primary" onclick="startSurvey()">Get Started</button>
-            </div>
-        </div>
-
-
-        <!-- Question 1 -->
-        <div id="screen-q1" class="screen">
-            <div class="question-text">How confident are you in your understanding of Generative AI?</div>
-            <div class="options-grid">
-                <div class="option-card" data-val="Very confident" onclick="selectOption(this, 'confidence')">Very confident</div>
-                <div class="option-card" data-val="Somewhat confident" onclick="selectOption(this, 'confidence')">Somewhat confident</div>
-                <div class="option-card" data-val="Neutral" onclick="selectOption(this, 'confidence')">Neutral</div>
-                <div class="option-card" data-val="Not very confident" onclick="selectOption(this, 'confidence')">Not very confident</div>
-                <div class="option-card" data-val="Not confident at all" onclick="selectOption(this, 'confidence')">Not confident at all</div>
-            </div>
-        </div>
-
-
-        <!-- Question 2 -->
-        <div id="screen-q2" class="screen">
-            <div class="question-text">How comfortable do you currently feel using Gemini in your role?</div>
-            <div class="options-grid">
-                <div class="option-card" data-val="Very comfortable" onclick="selectOption(this, 'comfort')">Very comfortable</div>
-                <div class="option-card" data-val="Comfortable" onclick="selectOption(this, 'comfort')">Comfortable</div>
-                <div class="option-card" data-val="Unsure" onclick="selectOption(this, 'comfort')">Unsure</div>
-                <div class="option-card" data-val="Uncomfortable" onclick="selectOption(this, 'comfort')">Uncomfortable</div>
-                <div class="option-card" data-val="Very uncomfortable" onclick="selectOption(this, 'comfort')">Very uncomfortable</div>
-            </div>
-        </div>
-
-
-        <!-- Question 3 -->
-        <div id="screen-q3" class="screen">
-            <div class="question-text">What is your biggest concern about using Generative AI?</div>
-            <div class="options-grid">
-                <div class="option-card" data-val="Accuracy or hallucinations" onclick="selectOption(this, 'concern')">Accuracy or hallucinations</div>
-                <div class="option-card" data-val="Data privacy" onclick="selectOption(this, 'concern')">Data privacy</div>
-                <div class="option-card" data-val="Policy uncertainty" onclick="selectOption(this, 'concern')">Policy uncertainty</div>
-                <div class="option-card" data-val="Making mistakes" onclick="selectOption(this, 'concern')">Making mistakes</div>
-                <div class="option-card" data-val="Lack of knowledge or training" onclick="selectOption(this, 'concern')">Lack of knowledge or training</div>
-                <div class="option-card" data-val="I do not currently have concerns" onclick="selectOption(this, 'concern')">I do not currently have concerns</div>
-                <div class="option-card" data-val="Other" onclick="selectOption(this, 'concern')">Other</div>
-            </div>
-        </div>
-
-
-        <!-- Question 4 -->
-        <div id="screen-q4" class="screen">
-            <div class="question-text">How useful do you think Generative AI could be in your role?</div>
-            <div class="options-grid">
-                <div class="option-card" data-val="Extremely useful" onclick="selectOption(this, 'usefulness')">Extremely useful</div>
-                <div class="option-card" data-val="Useful" onclick="selectOption(this, 'usefulness')">Useful</div>
-                <div class="option-card" data-val="Somewhat useful" onclick="selectOption(this, 'usefulness')">Somewhat useful</div>
-                <div class="option-card" data-val="Not very useful" onclick="selectOption(this, 'usefulness')">Not very useful</div>
-                <div class="option-card" data-val="Not useful at all" onclick="selectOption(this, 'usefulness')">Not useful at all</div>
-            </div>
-        </div>
-
-
-        <!-- Question 5 -->
-        <div id="screen-q5" class="screen">
-            <div class="question-text">Would you be willing to complete a short follow-up pulse check in approximately 3 months to help us measure changes in AI confidence and adoption?</div>
-            <div class="options-grid">
-                <div class="option-card" data-val="Yes" onclick="selectOption(this, 'followUpConsent')">Yes</div>
-                <div class="option-card" data-val="No" onclick="selectOption(this, 'followUpConsent')">No</div>
-            </div>
-        </div>
-
-
-        <!-- Question 6 (Optional Text) -->
-        <div id="screen-q6" class="screen">
-            <div class="question-text">Optional: What support would help you feel more confident using Generative AI or Gemini?</div>
-            <textarea id="supportNeeded" placeholder="Type your thoughts here..."></textarea>
-        </div>
-
-
-        <!-- Final Review -->
-        <div id="screen-review" class="screen">
-            <h1>Review your pulse</h1>
-            <div id="review-content" class="review-list"></div>
-            <div id="error-message" class="error-box"></div>
-        </div>
-
-
-        <!-- Submitting State -->
-        <div id="screen-submitting" class="screen" style="justify-content: center; align-items: center; text-align: center;">
-            <div class="loader"></div>
-            <h3>Submitting your response...</h3>
-            <p>Please wait a moment.</p>
-        </div>
-
-
-        <!-- Thank You -->
-        <div id="screen-thanks" class="screen" style="justify-content: center; align-items: center; text-align: center;">
-            <div class="success-tick">✓</div>
-            <h1>Thank You</h1>
-            <p class="description">
-                Your feedback will help shape future AI learning, support and adoption across IBCA.
-            </p>
-        </div>
-
-
-        <!-- Global Navigation -->
-        <footer id="nav-section" class="nav-footer" style="display:none;">
-            <button id="btn-back" class="btn-secondary" onclick="prevScreen()">Back</button>
-            <button id="btn-next" class="btn-primary" onclick="nextScreen()">Next</button>
-            <button id="btn-submit" class="btn-primary" style="display:none;" onclick="submitSurvey()">Submit</button>
-        </footer>
+  <!-- ACCESSIBILITY BAR -->
+  <div class="bg-gray-100 py-2 px-4 border-b border-gray-200">
+    <div class="max-w-4xl mx-auto flex justify-between items-center text-xs">
+      <span class="text-gray-600 font-medium">Infected Blood Compensation Authority (IBCA) Internal Hub</span>
+      <div class="flex space-x-4">
+        <button onclick="toggleHighContrast()" class="hover:underline font-semibold text-gray-700 flex items-center gap-1">
+          <i class="fa-solid fa-circle-half-stroke text-sm"></i> High Contrast Mode
+        </button>
+        <button onclick="adjustFontSize(1)" class="hover:underline font-semibold text-gray-700 flex items-center gap-1">
+          <i class="fa-solid fa-magnifying-glass-plus text-sm"></i> Make Text Larger
+        </button>
+        <button onclick="adjustFontSize(-1)" class="hover:underline font-semibold text-gray-700 flex items-center gap-1">
+          <i class="fa-solid fa-magnifying-glass-minus text-sm"></i> Reset Text
+        </button>
+      </div>
     </div>
+  </div>
 
+  <!-- HEADER -->
+  <header class="bg-white border-b border-gray-200 shadow-sm py-5 px-6">
+    <div class="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div class="flex items-center space-x-3">
+        <!-- SVG recreation of official IBCA brand elements conforming to visual templates -->
+        <svg width="60" height="60" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="flex-shrink-0">
+          <circle cx="50" cy="50" r="45" stroke="#2D7D46" stroke-width="3" fill="#ffffff" />
+          <circle cx="35" cy="40" r="10" fill="#4A154B" />
+          <circle cx="65" cy="40" r="12" fill="#2D7D46" />
+          <circle cx="50" cy="70" r="8" fill="#5C2D91" />
+          <line x1="35" y1="40" x2="65" y2="40" stroke="#E2E8F0" stroke-width="2" />
+          <line x1="50" y1="70" x2="65" y2="40" stroke="#E2E8F0" stroke-width="2" />
+        </svg>
+        <div>
+          <h1 class="text-xl font-bold tracking-tight text-gray-900 leading-tight">
+            Infected Blood Compensation Authority
+          </h1>
+          <p class="text-xs font-semibold text-emerald-700 tracking-wider uppercase">IBCA Digital Services</p>
+        </div>
+      </div>
+      <div class="flex space-x-2">
+        <button onclick="toggleConfigPanel()" class="btn-secondary px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5">
+          <i class="fa-solid fa-cog"></i> Form Integration Settings
+        </button>
+      </div>
+    </div>
+  </header>
 
-    <script>
-        /* STATE MANAGEMENT */
-        let currentScreenIndex = 0;
-        const screens = [
-            'welcome', 'q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'review', 'submitting', 'thanks'
-        ];
+  <!-- MAIN CONTAINER -->
+  <main class="flex-grow py-8 px-4 max-w-4xl w-full mx-auto">
+    <div class="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden pulse-card">
+      
+      <!-- TOP ACCENT LINE -->
+      <div class="h-1.5 bg-gradient-to-r from-emerald-600 via-green-700 to-purple-800"></div>
+
+      <!-- INTRO & PROGRESS -->
+      <div class="p-6 md:p-8 border-b border-gray-100">
+        <div class="flex justify-between items-center mb-4">
+          <span class="text-sm font-semibold uppercase tracking-wider text-emerald-700" id="tracker-label">IBCA Pulse Survey</span>
+          <span class="text-xs bg-emerald-50 text-emerald-800 px-2 py-1 rounded font-semibold" id="time-badge">Estimated completion time: 2 minutes</span>
+        </div>
         
-        const responses = {
-            confidence: null,
-            comfort: null,
-            concern: null,
-            usefulness: null,
-            followUpConsent: null,
-            supportNeeded: ""
+        <h2 class="text-2xl font-bold text-gray-900 mb-2">IBCA Generative AI Pulse</h2>
+        <p class="text-gray-600 mb-6">Help shape AI learning, confidence and adoption across IBCA.</p>
+
+        <!-- PROGRESS BAR -->
+        <div class="w-full bg-gray-100 rounded-full h-2 mb-2">
+          <div class="progress-bar-fill h-2 rounded-full w-[0%]" id="progress-bar"></div>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-xs text-gray-500" id="progress-text">Step 1 of 11</span>
+          <span class="text-xs font-semibold text-red-600">* Indicates required question</span>
+        </div>
+      </div>
+
+      <!-- ERROR MESSAGE BANNER (Custom, avoiding browser alerts) -->
+      <div id="error-banner" class="hidden bg-red-50 border-l-4 border-red-500 p-4 mx-6 md:mx-8 mt-4 rounded">
+        <div class="flex">
+          <div class="flex-shrink-0">
+            <i class="fa-solid fa-circle-exclamation text-red-500"></i>
+          </div>
+          <div class="ml-3">
+            <p class="text-sm text-red-700 font-semibold" id="error-message">Please answer the required questions to proceed.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SURVEY FORM TARGETING HIDDEN IFRAME -->
+      <form id="pulse-form" method="POST" target="hidden_iframe" class="p-6 md:p-8">
+        
+        <!-- STEP 0: WELCOME SCREEN (Compliance with trauma-informed Design / Warm Welcome) -->
+        <div class="step-card active" id="step-welcome">
+          <div class="space-y-4">
+            <h3 class="text-lg font-bold text-gray-900 border-l-4 border-emerald-600 pl-3">Before we begin</h3>
+            <p class="text-gray-600">
+              We appreciate you sharing your perspective. Your feedback directly impacts how we craft specific AI training resources, shape adoption pathways, and support every colleague across IBCA.
+            </p>
+            <div class="bg-emerald-50 rounded-lg p-5 border border-emerald-100/80">
+              <h4 class="font-bold text-emerald-900 mb-2 flex items-center gap-1.5 text-sm">
+                <i class="fa-solid fa-shield-halved"></i> Privacy & Transparency:
+              </h4>
+              <p class="text-xs text-emerald-800 leading-relaxed">
+                By participating in this internal pulse check, we can identify exactly what support our teams require. We will handle all information with confidentiality and care, in accordance with the standard guidelines of the authority.
+              </p>
+            </div>
+            <div class="pt-4">
+              <button type="button" onclick="goToNextStep()" class="btn-primary w-full md:w-auto px-6 py-3 rounded-md font-bold text-sm">
+                Start Survey <i class="fa-solid fa-arrow-right ml-2"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 1: Name (Required) -->
+        <div class="step-card" id="step-q1">
+          <div class="space-y-4">
+            <label class="block text-base font-bold text-gray-900">
+              Name <span class="text-red-500">*</span>
+            </label>
+            <p class="text-xs text-gray-500">Kindly provide your full name</p>
+            <input type="text" id="input-name" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition" placeholder="Your name">
+            <div class="flex space-x-3 pt-4">
+              <button type="button" onclick="goToPrevStep()" class="btn-secondary px-5 py-2.5 rounded-md font-semibold text-sm">Back</button>
+              <button type="button" onclick="goToNextStep()" class="btn-primary px-5 py-2.5 rounded-md font-semibold text-sm">Next <i class="fa-solid fa-arrow-right ml-1"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2: Email (Required) -->
+        <div class="step-card" id="step-q2">
+          <div class="space-y-4">
+            <label class="block text-base font-bold text-gray-900">
+              Email <span class="text-red-500">*</span>
+            </label>
+            <p class="text-xs text-gray-500">work email address</p>
+            <input type="email" id="input-email" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition" placeholder="work email address">
+            <div class="flex space-x-3 pt-4">
+              <button type="button" onclick="goToPrevStep()" class="btn-secondary px-5 py-2.5 rounded-md font-semibold text-sm">Back</button>
+              <button type="button" onclick="goToNextStep()" class="btn-primary px-5 py-2.5 rounded-md font-semibold text-sm">Next <i class="fa-solid fa-arrow-right ml-1"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 3: How often do you currently use Generative AI tools (Required) -->
+        <div class="step-card" id="step-q3">
+          <div class="space-y-4">
+            <label class="block text-base font-bold text-gray-900">
+              1. How often do you currently use Generative AI tools (like Gemini) for work tasks? <span class="text-red-500">*</span>
+            </label>
+            <p class="text-xs text-gray-500 mb-2">Mark only one option</p>
+            <div class="grid grid-cols-1 gap-3">
+              <div class="option-card p-4 rounded-lg flex items-center" onclick="selectRadioOption('q3', 'Daily', this)">
+                <span class="w-5 h-5 rounded-full border border-gray-400 flex items-center justify-center mr-3 flex-shrink-0 radio-indicator"></span>
+                <span class="text-sm text-gray-800">Daily</span>
+              </div>
+              <div class="option-card p-4 rounded-lg flex items-center" onclick="selectRadioOption('q3', 'Weekly', this)">
+                <span class="w-5 h-5 rounded-full border border-gray-400 flex items-center justify-center mr-3 flex-shrink-0 radio-indicator"></span>
+                <span class="text-sm text-gray-800">Weekly</span>
+              </div>
+              <div class="option-card p-4 rounded-lg flex items-center" onclick="selectRadioOption('q3', 'Monthly', this)">
+                <span class="w-5 h-5 rounded-full border border-gray-400 flex items-center justify-center mr-3 flex-shrink-0 radio-indicator"></span>
+                <span class="text-sm text-gray-800">Monthly</span>
+              </div>
+              <div class="option-card p-4 rounded-lg flex items-center" onclick="selectRadioOption('q3', 'Rarely', this)">
+                <span class="w-5 h-5 rounded-full border border-gray-400 flex items-center justify-center mr-3 flex-shrink-0 radio-indicator"></span>
+                <span class="text-sm text-gray-800">Rarely</span>
+              </div>
+              <div class="option-card p-4 rounded-lg flex items-center" onclick="selectRadioOption('q3', 'Never', this)">
+                <span class="w-5 h-5 rounded-full border border-gray-400 flex items-center justify-center mr-3 flex-shrink-0 radio-indicator"></span>
+                <span class="text-sm text-gray-800">Never</span>
+              </div>
+            </div>
+            <!-- Hidden Input for Form Submission -->
+            <input type="hidden" id="input-q3" name="">
+            <div class="flex space-x-3 pt-4">
+              <button type="button" onclick="goToPrevStep()" class="btn-secondary px-5 py-2.5 rounded-md font-semibold text-sm">Back</button>
+              <button type="button" onclick="goToNextStep()" class="btn-primary px-5 py-2.5 rounded-md font-semibold text-sm">Next <i class="fa-solid fa-arrow-right ml-1"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 4: How confident are you (Required) -->
+        <div class="step-card" id="step-q4">
+          <div class="space-y-4">
+            <label class="block text-base font-bold text-gray-900">
+              2. How confident are you in your understanding of what Generative AI is and how it works? <span class="text-red-500">*</span>
+            </label>
+            <p class="text-xs text-gray-500 mb-2">Mark only one option from the scale</p>
+            
+            <div class="flex flex-col items-center py-6 bg-gray-50 rounded-xl border border-gray-100">
+              <div class="flex justify-between w-full max-w-md px-6 mb-2 text-xs font-semibold text-gray-600">
+                <span>1 - Very</span>
+                <span>5 - Very Confident</span>
+              </div>
+              <div class="flex justify-between w-full max-w-md px-4">
+                <div class="scale-btn" onclick="selectScaleOption('q4', '1', this)">1</div>
+                <div class="scale-btn" onclick="selectScaleOption('q4', '2', this)">2</div>
+                <div class="scale-btn" onclick="selectScaleOption('q4', '3', this)">3</div>
+                <div class="scale-btn" onclick="selectScaleOption('q4', '4', this)">4</div>
+                <div class="scale-btn" onclick="selectScaleOption('q4', '5', this)">5</div>
+              </div>
+            </div>
+            <!-- Hidden Input for Form Submission -->
+            <input type="hidden" id="input-q4" name="">
+            <div class="flex space-x-3 pt-4">
+              <button type="button" onclick="goToPrevStep()" class="btn-secondary px-5 py-2.5 rounded-md font-semibold text-sm">Back</button>
+              <button type="button" onclick="goToNextStep()" class="btn-primary px-5 py-2.5 rounded-md font-semibold text-sm">Next <i class="fa-solid fa-arrow-right ml-1"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 5: How comfortable (Required) -->
+        <div class="step-card" id="step-q5">
+          <div class="space-y-4">
+            <label class="block text-base font-bold text-gray-900">
+              3. How comfortable do you currently feel using Gemini in your day-to-day role? <span class="text-red-500">*</span>
+            </label>
+            <p class="text-xs text-gray-500 mb-2">Mark only one option from the scale</p>
+            
+            <div class="flex flex-col items-center py-6 bg-gray-50 rounded-xl border border-gray-100">
+              <div class="flex justify-between w-full max-w-md px-6 mb-2 text-xs font-semibold text-gray-600">
+                <span>1 - Very</span>
+                <span>5 - Very Comfortable</span>
+              </div>
+              <div class="flex justify-between w-full max-w-md px-4">
+                <div class="scale-btn" onclick="selectScaleOption('q5', '1', this)">1</div>
+                <div class="scale-btn" onclick="selectScaleOption('q5', '2', this)">2</div>
+                <div class="scale-btn" onclick="selectScaleOption('q5', '3', this)">3</div>
+                <div class="scale-btn" onclick="selectScaleOption('q5', '4', this)">4</div>
+                <div class="scale-btn" onclick="selectScaleOption('q5', '5', this)">5</div>
+              </div>
+            </div>
+            <!-- Hidden Input for Form Submission -->
+            <input type="hidden" id="input-q5" name="">
+            <div class="flex space-x-3 pt-4">
+              <button type="button" onclick="goToPrevStep()" class="btn-secondary px-5 py-2.5 rounded-md font-semibold text-sm">Back</button>
+              <button type="button" onclick="goToNextStep()" class="btn-primary px-5 py-2.5 rounded-md font-semibold text-sm">Next <i class="fa-solid fa-arrow-right ml-1"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 6: How useful (Required) -->
+        <div class="step-card" id="step-q6">
+          <div class="space-y-4">
+            <label class="block text-base font-bold text-gray-900">
+              4. How useful do you think Generative AI could be in improving the efficiency and quality of your work? <span class="text-red-500">*</span>
+            </label>
+            <p class="text-xs text-gray-500 mb-2">Mark only one option</p>
+            <div class="grid grid-cols-1 gap-3">
+              <div class="option-card p-4 rounded-lg flex items-center" onclick="selectRadioOption('q6', '1 - Not at all useful', this)">
+                <span class="w-5 h-5 rounded-full border border-gray-400 flex items-center justify-center mr-3 flex-shrink-0 radio-indicator"></span>
+                <span class="text-sm text-gray-800">1 - Not at all useful</span>
+              </div>
+              <div class="option-card p-4 rounded-lg flex items-center" onclick="selectRadioOption('q6', '2 - Slightly useful', this)">
+                <span class="w-5 h-5 rounded-full border border-gray-400 flex items-center justify-center mr-3 flex-shrink-0 radio-indicator"></span>
+                <span class="text-sm text-gray-800">2 - Slightly useful</span>
+              </div>
+              <div class="option-card p-4 rounded-lg flex items-center" onclick="selectRadioOption('q6', '3 - Moderately useful', this)">
+                <span class="w-5 h-5 rounded-full border border-gray-400 flex items-center justify-center mr-3 flex-shrink-0 radio-indicator"></span>
+                <span class="text-sm text-gray-800">3 - Moderately useful</span>
+              </div>
+              <div class="option-card p-4 rounded-lg flex items-center" onclick="selectRadioOption('q6', '4 - Very useful', this)">
+                <span class="w-5 h-5 rounded-full border border-gray-400 flex items-center justify-center mr-3 flex-shrink-0 radio-indicator"></span>
+                <span class="text-sm text-gray-800">4 - Very useful</span>
+              </div>
+              <div class="option-card p-4 rounded-lg flex items-center" onclick="selectRadioOption('q6', '5 - Extremely useful', this)">
+                <span class="w-5 h-5 rounded-full border border-gray-400 flex items-center justify-center mr-3 flex-shrink-0 radio-indicator"></span>
+                <span class="text-sm text-gray-800">5 - Extremely useful</span>
+              </div>
+            </div>
+            <!-- Hidden Input for Form Submission -->
+            <input type="hidden" id="input-q6" name="">
+            <div class="flex space-x-3 pt-4">
+              <button type="button" onclick="goToPrevStep()" class="btn-secondary px-5 py-2.5 rounded-md font-semibold text-sm">Back</button>
+              <button type="button" onclick="goToNextStep()" class="btn-primary px-5 py-2.5 rounded-md font-semibold text-sm">Next <i class="fa-solid fa-arrow-right ml-1"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 7: Time saved (Required) -->
+        <div class="step-card" id="step-q7">
+          <div class="space-y-4">
+            <label class="block text-base font-bold text-gray-900">
+              5. If you use AI, how much time do you feel it currently saves you per week? <span class="text-red-500">*</span>
+            </label>
+            <p class="text-xs text-gray-500 mb-2">Mark only one option</p>
+            <div class="grid grid-cols-1 gap-3">
+              <div class="option-card p-4 rounded-lg flex items-center" onclick="selectRadioOption('q7', '0-2 hours', this)">
+                <span class="w-5 h-5 rounded-full border border-gray-400 flex items-center justify-center mr-3 flex-shrink-0 radio-indicator"></span>
+                <span class="text-sm text-gray-800">0-2 hours</span>
+              </div>
+              <div class="option-card p-4 rounded-lg flex items-center" onclick="selectRadioOption('q7', '3-5 hours', this)">
+                <span class="w-5 h-5 rounded-full border border-gray-400 flex items-center justify-center mr-3 flex-shrink-0 radio-indicator"></span>
+                <span class="text-sm text-gray-800">3-5 hours</span>
+              </div>
+              <div class="option-card p-4 rounded-lg flex items-center" onclick="selectRadioOption('q7', '6-10 hours', this)">
+                <span class="w-5 h-5 rounded-full border border-gray-400 flex items-center justify-center mr-3 flex-shrink-0 radio-indicator"></span>
+                <span class="text-sm text-gray-800">6-10 hours</span>
+              </div>
+              <div class="option-card p-4 rounded-lg flex items-center" onclick="selectRadioOption('q7', '10+ hours', this)">
+                <span class="w-5 h-5 rounded-full border border-gray-400 flex items-center justify-center mr-3 flex-shrink-0 radio-indicator"></span>
+                <span class="text-sm text-gray-800">10+ hours</span>
+              </div>
+            </div>
+            <!-- Hidden Input for Form Submission -->
+            <input type="hidden" id="input-q7" name="">
+            <div class="flex space-x-3 pt-4">
+              <button type="button" onclick="goToPrevStep()" class="btn-secondary px-5 py-2.5 rounded-md font-semibold text-sm">Back</button>
+              <button type="button" onclick="goToNextStep()" class="btn-primary px-5 py-2.5 rounded-md font-semibold text-sm">Next <i class="fa-solid fa-arrow-right ml-1"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 8: Concerns (Select up to 2) -->
+        <div class="step-card" id="step-q8">
+          <div class="space-y-4">
+            <label class="block text-base font-bold text-gray-900">
+              6. What is your biggest concern regarding the use of Generative AI at work? <span class="text-gray-500 font-normal">(Select up to two)</span>
+            </label>
+            <p class="text-xs text-red-600 font-medium mb-2" id="concern-count-warning">Please select up to 2 choices</p>
+            <div class="grid grid-cols-1 gap-3" id="checkbox-group">
+              <div class="option-card p-4 rounded-lg flex items-center" onclick="toggleCheckboxOption('q8', 'Data privacy and security', this)">
+                <span class="w-5 h-5 rounded border border-gray-400 flex items-center justify-center mr-3 flex-shrink-0 checkbox-indicator"></span>
+                <span class="text-sm text-gray-800">Data privacy and security</span>
+              </div>
+              <div class="option-card p-4 rounded-lg flex items-center" onclick="toggleCheckboxOption('q8', 'Inaccurate information or &quot;hallucinations&quot;', this)">
+                <span class="w-5 h-5 rounded border border-gray-400 flex items-center justify-center mr-3 flex-shrink-0 checkbox-indicator"></span>
+                <span class="text-sm text-gray-800">Inaccurate information or "hallucinations"</span>
+              </div>
+              <div class="option-card p-4 rounded-lg flex items-center" onclick="toggleCheckboxOption('q8', 'Lack of time to learn how to use it', this)">
+                <span class="w-5 h-5 rounded border border-gray-400 flex items-center justify-center mr-3 flex-shrink-0 checkbox-indicator"></span>
+                <span class="text-sm text-gray-800">Lack of time to learn how to use it</span>
+              </div>
+              <div class="option-card p-4 rounded-lg flex items-center" onclick="toggleCheckboxOption('q8', 'Don\'t know what use cases apply to my role', this)">
+                <span class="w-5 h-5 rounded border border-gray-400 flex items-center justify-center mr-3 flex-shrink-0 checkbox-indicator"></span>
+                <span class="text-sm text-gray-800">Don't know what use cases apply to my role</span>
+              </div>
+              <div class="option-card p-4 rounded-lg flex items-center" onclick="toggleCheckboxOption('q8', 'Fear of it replacing aspects of my job', this)">
+                <span class="w-5 h-5 rounded border border-gray-400 flex items-center justify-center mr-3 flex-shrink-0 checkbox-indicator"></span>
+                <span class="text-sm text-gray-800">Fear of it replacing aspects of my job</span>
+              </div>
+              <div class="option-card p-4 rounded-lg flex items-center" onclick="toggleCheckboxOption('q8', 'I do not have any concerns', this)">
+                <span class="w-5 h-5 rounded border border-gray-400 flex items-center justify-center mr-3 flex-shrink-0 checkbox-indicator"></span>
+                <span class="text-sm text-gray-800">I do not have any concerns</span>
+              </div>
+              
+              <!-- Custom "Other" option -->
+              <div class="option-card p-4 rounded-lg flex flex-col md:flex-row md:items-center gap-2" id="other-concern-card">
+                <div class="flex items-center" onclick="toggleOtherConcernClick()">
+                  <span id="other-checkbox-indicator" class="w-5 h-5 rounded border border-gray-400 flex items-center justify-center mr-3 flex-shrink-0"></span>
+                  <span class="text-sm text-gray-800">Other:</span>
+                </div>
+                <input type="text" id="input-q8-other" class="flex-grow px-3 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-emerald-500" placeholder="Type your other concerns" oninput="onOtherConcernInput()">
+              </div>
+            </div>
+            
+            <!-- Hidden inputs configured to handle custom post back mapping -->
+            <input type="hidden" id="input-q8-primary" name="">
+            <input type="hidden" id="input-q8-secondary" name="">
+            <input type="hidden" id="input-q8-other-val" name="">
+
+            <div class="flex space-x-3 pt-4">
+              <button type="button" onclick="goToPrevStep()" class="btn-secondary px-5 py-2.5 rounded-md font-semibold text-sm">Back</button>
+              <button type="button" onclick="goToNextStep()" class="btn-primary px-5 py-2.5 rounded-md font-semibold text-sm">Next <i class="fa-solid fa-arrow-right ml-1"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 9: Have you used NotebookLM (Required) -->
+        <div class="step-card" id="step-q9">
+          <div class="space-y-4">
+            <label class="block text-base font-bold text-gray-900">
+              7. Have you used NotebookLM, if at all? <span class="text-red-500">*</span>
+            </label>
+            <p class="text-xs text-gray-500 mb-2">Mark only one option</p>
+            <div class="grid grid-cols-1 gap-3">
+              <div class="option-card p-4 rounded-lg flex items-center" onclick="selectRadioOption('q9', 'I have not used it', this)">
+                <span class="w-5 h-5 rounded-full border border-gray-400 flex items-center justify-center mr-3 flex-shrink-0 radio-indicator"></span>
+                <span class="text-sm text-gray-800">I have not used it</span>
+              </div>
+              <div class="option-card p-4 rounded-lg flex items-center" onclick="selectRadioOption('q9', 'I have explored it briefly', this)">
+                <span class="w-5 h-5 rounded-full border border-gray-400 flex items-center justify-center mr-3 flex-shrink-0 radio-indicator"></span>
+                <span class="text-sm text-gray-800">I have explored it briefly</span>
+              </div>
+              <div class="option-card p-4 rounded-lg flex items-center" onclick="selectRadioOption('q9', 'I use it occassionally for work', this)">
+                <span class="w-5 h-5 rounded-full border border-gray-400 flex items-center justify-center mr-3 flex-shrink-0 radio-indicator"></span>
+                <span class="text-sm text-gray-800">I use it occassionally for work</span>
+              </div>
+              <div class="option-card p-4 rounded-lg flex items-center" onclick="selectRadioOption('q9', 'I use it regularly in my role', this)">
+                <span class="w-5 h-5 rounded-full border border-gray-400 flex items-center justify-center mr-3 flex-shrink-0 radio-indicator"></span>
+                <span class="text-sm text-gray-800">I use it regularly in my role</span>
+              </div>
+              <div class="option-card p-4 rounded-lg flex items-center" onclick="selectRadioOption('q9', 'I am unsure what NotebookLM is', this)">
+                <span class="w-5 h-5 rounded-full border border-gray-400 flex items-center justify-center mr-3 flex-shrink-0 radio-indicator"></span>
+                <span class="text-sm text-gray-800">I am unsure what NotebookLM is</span>
+              </div>
+            </div>
+            <!-- Hidden Input for Form Submission -->
+            <input type="hidden" id="input-q9" name="">
+            <div class="flex space-x-3 pt-4">
+              <button type="button" onclick="goToPrevStep()" class="btn-secondary px-5 py-2.5 rounded-md font-semibold text-sm">Back</button>
+              <button type="button" onclick="goToNextStep()" class="btn-primary px-5 py-2.5 rounded-md font-semibold text-sm">Next <i class="fa-solid fa-arrow-right ml-1"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 10: Specific support (Optional) -->
+        <div class="step-card" id="step-q10">
+          <div class="space-y-4">
+            <label class="block text-base font-bold text-gray-900">
+              8. What specific support, training, or resources would help you feel more confident using Gemini?
+            </label>
+            <p class="text-xs text-gray-500">Provide details on resource styles, practical workshops, or guidelines that would support your role.</p>
+            <textarea id="input-q10" rows="5" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition" placeholder="Your suggestions..."></textarea>
+            
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mt-4">
+              <p class="text-xs text-gray-600 leading-relaxed">
+                By selecting 'Submit response' below, your contribution will be submitted securely into the IBCA central database. We will utilize your feedback to optimize training frameworks over the coming fiscal cycle.
+              </p>
+            </div>
+            
+            <div class="flex space-x-3 pt-4">
+              <button type="button" onclick="goToPrevStep()" class="btn-secondary px-5 py-2.5 rounded-md font-semibold text-sm">Back</button>
+              <button type="submit" id="submit-btn" class="btn-primary flex items-center gap-2 px-6 py-2.5 rounded-md font-bold text-sm">
+                Submit Response <i class="fa-solid fa-paper-plane"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </form>
+
+      <!-- STEP 11: THANK YOU & INTERACTIVE DASHBOARD SCREEN -->
+      <div class="step-card p-6 md:p-8" id="step-thankyou">
+        <div class="text-center py-6">
+          <div class="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fa-solid fa-check text-2xl text-emerald-700"></i>
+          </div>
+          <h3 class="text-2xl font-bold text-gray-900 mb-2">Thank you!</h3>
+          <p class="text-gray-600 max-w-lg mx-auto mb-6">Your response to the IBCA Generative AI Pulse has been submitted. We appreciate your valuable collaboration.</p>
+        </div>
+
+        <!-- REAL-TIME SURVEY DASHBOARD -->
+        <div class="border-t border-gray-100 pt-6 mt-6">
+          <h4 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-chart-line text-emerald-700"></i> Real-time Collective Pulse Results
+          </h4>
+          <p class="text-xs text-gray-500 mb-6">These figures represent aggregated anonymous feedback collected from teammates across the Infected Blood Compensation Authority.</p>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Confidence Level Metric -->
+            <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
+              <h5 class="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Average Confidence Level</h5>
+              <div class="flex items-baseline space-x-2">
+                <span class="text-3xl font-extrabold text-emerald-800" id="dash-conf-val">3.8</span>
+                <span class="text-xs text-gray-500">out of 5</span>
+              </div>
+              <p class="text-xs text-gray-600 mt-2">Colleagues showing a moderate-to-high level of confidence with Generative AI tools.</p>
+            </div>
+
+            <!-- Time Saved Metric -->
+            <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
+              <h5 class="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Est. Average Weekly Time Saved</h5>
+              <div class="flex items-baseline space-x-2">
+                <span class="text-3xl font-extrabold text-emerald-800" id="dash-time-val">4.2</span>
+                <span class="text-xs text-gray-500">hours/week</span>
+              </div>
+              <p class="text-xs text-gray-600 mt-2">Based on self-reported savings among active AI practitioners within the department.</p>
+            </div>
+
+            <!-- SVG Bar Chart for Q1 usage frequency -->
+            <div class="bg-gray-50 p-4 rounded-xl border border-gray-100 col-span-1 md:col-span-2">
+              <h5 class="text-xs font-bold text-gray-700 uppercase tracking-wider mb-4">Adoption Frequency Breakdown</h5>
+              <div class="space-y-3">
+                <div>
+                  <div class="flex justify-between text-xs mb-1">
+                    <span class="font-semibold">Daily Users</span>
+                    <span class="text-gray-500" id="stat-daily">35%</span>
+                  </div>
+                  <div class="w-full bg-gray-200 h-2.5 rounded-full">
+                    <div class="bg-emerald-600 h-2.5 rounded-full w-[35%]" id="bar-daily"></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex justify-between text-xs mb-1">
+                    <span class="font-semibold">Weekly Users</span>
+                    <span class="text-gray-500" id="stat-weekly">42%</span>
+                  </div>
+                  <div class="w-full bg-gray-200 h-2.5 rounded-full">
+                    <div class="bg-emerald-600 h-2.5 rounded-full w-[42%]" id="bar-weekly"></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex justify-between text-xs mb-1">
+                    <span class="font-semibold">Monthly / Occasional</span>
+                    <span class="text-gray-500" id="stat-occasional">18%</span>
+                  </div>
+                  <div class="w-full bg-gray-200 h-2.5 rounded-full">
+                    <div class="bg-emerald-600 h-2.5 rounded-full w-[18%]" id="bar-occasional"></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex justify-between text-xs mb-1">
+                    <span class="font-semibold">Rarely or Never</span>
+                    <span class="text-gray-500" id="stat-never">5%</span>
+                  </div>
+                  <div class="w-full bg-gray-200 h-2.5 rounded-full">
+                    <div class="bg-emerald-600 h-2.5 rounded-full w-[5%]" id="bar-never"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-6 flex justify-center">
+            <button onclick="restartSurvey()" class="btn-secondary px-5 py-2.5 rounded-md font-semibold text-sm">
+              <i class="fa-solid fa-rotate-left mr-1"></i> Submit Another Response
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- FORM SETUP & CONFIGURATION SLIDE-OUT DRAWER -->
+  <div id="config-panel" class="fixed inset-y-0 right-0 max-w-lg w-full bg-white shadow-2xl border-l border-gray-200 transform translate-x-full transition-transform duration-300 ease-in-out z-50 overflow-y-auto">
+    <div class="p-6 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+      <div>
+        <h3 class="font-bold text-gray-900 text-lg flex items-center gap-1.5">
+          <i class="fa-solid fa-link text-emerald-700"></i> Google Form Integration
+        </h3>
+        <p class="text-xs text-gray-500 mt-0.5">Configure your live form endpoint to submit data directly.</p>
+      </div>
+      <button onclick="toggleConfigPanel()" class="text-gray-400 hover:text-gray-600">
+        <i class="fa-solid fa-xmark text-xl"></i>
+      </button>
+    </div>
+    
+    <div class="p-6 space-y-6">
+      <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded text-xs text-amber-800 space-y-2">
+        <p class="font-bold">How Google Form Submission Works:</p>
+        <p>This application mimics a live Google Form. When the user submits, it formats the responses exactly into the Google Forms query structure and posts it behind the scenes to avoid leaving this beautiful page.</p>
+      </div>
+
+      <!-- Action URL Configuration -->
+      <div class="space-y-2">
+        <label class="block text-sm font-bold text-gray-800">1. Google Form Action URL</label>
+        <p class="text-xs text-gray-500">Change "edit" in your form link to "formResponse" (e.g., https://docs.google.com/forms/d/e/[FORM-ID]/formResponse)</p>
+        <input type="text" id="config-form-url" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-emerald-500 text-sm" value="https://docs.google.com/forms/d/e/1FAIpQLSfp-DummyFormId123/formResponse">
+      </div>
+
+      <!-- Question Field Key Configuration -->
+      <div class="space-y-4">
+        <label class="block text-sm font-bold text-gray-800">2. Field Maps (entry.XXXXXXXXX)</label>
+        <p class="text-xs text-gray-500">Match these keys to your Google Form HTML input 'name' values to record data correctly into your connected Google Sheet.</p>
+        
+        <div class="grid grid-cols-2 gap-3 text-xs">
+          <div class="space-y-1">
+            <label class="block font-medium text-gray-600">Q0. Name (Required)</label>
+            <input type="text" id="map-name" class="w-full px-2 py-1.5 border border-gray-300 rounded font-mono" value="entry.1000001">
+          </div>
+          <div class="space-y-1">
+            <label class="block font-medium text-gray-600">Q0. Email (Required)</label>
+            <input type="text" id="map-email" class="w-full px-2 py-1.5 border border-gray-300 rounded font-mono" value="entry.1000002">
+          </div>
+          <div class="space-y-1">
+            <label class="block font-medium text-gray-600">Q1. Frequency (Required)</label>
+            <input type="text" id="map-q3" class="w-full px-2 py-1.5 border border-gray-300 rounded font-mono" value="entry.1000003">
+          </div>
+          <div class="space-y-1">
+            <label class="block font-medium text-gray-600">Q2. Confidence (Required)</label>
+            <input type="text" id="map-q4" class="w-full px-2 py-1.5 border border-gray-300 rounded font-mono" value="entry.1000004">
+          </div>
+          <div class="space-y-1">
+            <label class="block font-medium text-gray-600">Q3. Comfort (Required)</label>
+            <input type="text" id="map-q5" class="w-full px-2 py-1.5 border border-gray-300 rounded font-mono" value="entry.1000005">
+          </div>
+          <div class="space-y-1">
+            <label class="block font-medium text-gray-600">Q4. Utility (Required)</label>
+            <input type="text" id="map-q6" class="w-full px-2 py-1.5 border border-gray-300 rounded font-mono" value="entry.1000006">
+          </div>
+          <div class="space-y-1">
+            <label class="block font-medium text-gray-600">Q5. Time Saved (Required)</label>
+            <input type="text" id="map-q7" class="w-full px-2 py-1.5 border border-gray-300 rounded font-mono" value="entry.1000007">
+          </div>
+          <div class="space-y-1">
+            <label class="block font-medium text-gray-600">Q6. Concerns (Checkbox 1)</label>
+            <input type="text" id="map-q8-primary" class="w-full px-2 py-1.5 border border-gray-300 rounded font-mono" value="entry.1000008">
+          </div>
+          <div class="space-y-1">
+            <label class="block font-medium text-gray-600">Q6. Concerns (Checkbox 2)</label>
+            <input type="text" id="map-q8-secondary" class="w-full px-2 py-1.5 border border-gray-300 rounded font-mono" value="entry.1000009">
+          </div>
+          <div class="space-y-1">
+            <label class="block font-medium text-gray-600">Q6. Concerns (Other field)</label>
+            <input type="text" id="map-q8-other" class="w-full px-2 py-1.5 border border-gray-300 rounded font-mono" value="entry.1000010">
+          </div>
+          <div class="space-y-1">
+            <label class="block font-medium text-gray-600">Q7. NotebookLM (Required)</label>
+            <input type="text" id="map-q9" class="w-full px-2 py-1.5 border border-gray-300 rounded font-mono" value="entry.1000011">
+          </div>
+          <div class="space-y-1">
+            <label class="block font-medium text-gray-600">Q8. Resources (Optional)</label>
+            <input type="text" id="map-q10" class="w-full px-2 py-1.5 border border-gray-300 rounded font-mono" value="entry.1000012">
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-4 border-t border-gray-100 flex space-x-3">
+        <button onclick="saveConfig()" class="btn-primary flex-grow py-2.5 rounded font-bold text-sm text-center">
+          Save Configuration
+        </button>
+        <button onclick="toggleConfigPanel()" class="btn-secondary px-4 py-2.5 rounded font-semibold text-sm">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HIDDEN IFRAME TARGET TO PREVENT RELOADING -->
+  <iframe name="hidden_iframe" id="hidden_iframe" onload="onIframeLoaded()"></iframe>
+
+  <!-- FOOTER -->
+  <footer class="bg-white border-t border-gray-200 py-6 px-4 mt-8">
+    <div class="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center text-xs text-gray-500 gap-4">
+      <p>&copy; 2026 Infected Blood Compensation Authority. All rights reserved.</p>
+      <div class="flex space-x-4">
+        <span class="font-medium">Version 1.2.0</span>
+        <span class="text-gray-300">|</span>
+        <span class="font-medium text-emerald-800">Support: comms@ibca.gov.uk</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- CORE JAVASCRIPT LOGIC -->
+  <script>
+    // Configured state tracking variables
+    let currentStepIndex = 0;
+    const steps = [
+      "step-welcome", "step-q1", "step-q2", "step-q3", "step-q4", 
+      "step-q5", "step-q6", "step-q7", "step-q8", "step-q9", "step-q10"
+    ];
+
+    // Data values collected
+    let surveyAnswers = {
+      name: "",
+      email: "",
+      q3: "",
+      q4: "",
+      q5: "",
+      q6: "",
+      q7: "",
+      q8: [], // Array of selected options (max 2)
+      q8_other: "", // string for text typed
+      q9: "",
+      q10: ""
+    };
+
+    // Tracking for native Form Post submissions
+    let formSubmittedState = false;
+
+    // Load configurations from LocalStorage if available
+    window.onload = function() {
+      loadSavedConfig();
+      updateProgressBar();
+    };
+
+    // Style adjustments
+    let currentFontSizeModifier = 0;
+    function adjustFontSize(dir) {
+      if (dir === -1) {
+        currentFontSizeModifier = 0;
+        document.body.style.fontSize = "16px";
+      } else {
+        currentFontSizeModifier = Math.min(currentFontSizeModifier + 2, 6);
+        document.body.style.fontSize = (16 + currentFontSizeModifier) + "px";
+      }
+    }
+
+    function toggleHighContrast() {
+      document.body.classList.toggle("high-contrast");
+    }
+
+    // Step Flow Navigation
+    function goToNextStep() {
+      // Clear errors
+      hideError();
+
+      // Validate Current Step
+      if (!validateCurrentStep()) {
+        return;
+      }
+
+      if (currentStepIndex < steps.length - 1) {
+        // Prepare layout change smoothly
+        document.getElementById(steps[currentStepIndex]).classList.remove("active");
+        currentStepIndex++;
+        document.getElementById(steps[currentStepIndex]).classList.add("active");
+        updateProgressBar();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    function goToPrevStep() {
+      hideError();
+      if (currentStepIndex > 0) {
+        document.getElementById(steps[currentStepIndex]).classList.remove("active");
+        currentStepIndex--;
+        document.getElementById(steps[currentStepIndex]).classList.add("active");
+        updateProgressBar();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    function updateProgressBar() {
+      const bar = document.getElementById("progress-bar");
+      const text = document.getElementById("progress-text");
+      const percentage = (currentStepIndex / (steps.length - 1)) * 100;
+      bar.style.width = percentage + "%";
+      text.innerText = "Step " + (currentStepIndex + 1) + " of " + steps.length;
+    }
+
+    // Validation Module
+    function validateCurrentStep() {
+      const stepId = steps[currentStepIndex];
+
+      if (stepId === "step-q1") {
+        const val = document.getElementById("input-name").value.trim();
+        if (!val) {
+          showError("Please enter your name.");
+          return false;
+        }
+        surveyAnswers.name = val;
+      }
+
+      if (stepId === "step-q2") {
+        const val = document.getElementById("input-email").value.trim();
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!val) {
+          showError("Please enter your work email address.");
+          return false;
+        }
+        if (!emailPattern.test(val)) {
+          showError("Please enter a valid work email address format.");
+          return false;
+        }
+        surveyAnswers.email = val;
+      }
+
+      if (stepId === "step-q3") {
+        if (!surveyAnswers.q3) {
+          showError("Please select how often you use Generative AI tools.");
+          return false;
+        }
+      }
+
+      if (stepId === "step-q4") {
+        if (!surveyAnswers.q4) {
+          showError("Please select a confidence value on the scale.");
+          return false;
+        }
+      }
+
+      if (stepId === "step-q5") {
+        if (!surveyAnswers.q5) {
+          showError("Please select a comfort level on the scale.");
+          return false;
+        }
+      }
+
+      if (stepId === "step-q6") {
+        if (!surveyAnswers.q6) {
+          showError("Please select how useful you think Generative AI could be.");
+          return false;
+        }
+      }
+
+      if (stepId === "step-q7") {
+        if (!surveyAnswers.q7) {
+          showError("Please select how much weekly time you feel AI saves you.");
+          return false;
+        }
+      }
+
+      if (stepId === "step-q9") {
+        if (!surveyAnswers.q9) {
+          showError("Please select whether you have used NotebookLM.");
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+    function showError(msg) {
+      const banner = document.getElementById("error-banner");
+      const msgText = document.getElementById("error-message");
+      msgText.innerText = msg;
+      banner.classList.remove("hidden");
+    }
+
+    function hideError() {
+      document.getElementById("error-banner").classList.add("hidden");
+    }
+
+    // Capture selections: Radio Group
+    function selectRadioOption(questionId, value, cardElement) {
+      surveyAnswers[questionId] = value;
+      
+      // Update element background highlights
+      const container = cardElement.parentNode;
+      const cards = container.querySelectorAll(".option-card");
+      cards.forEach(c => {
+        c.classList.remove("selected");
+        const dot = c.querySelector(".radio-indicator");
+        if (dot) dot.innerHTML = "";
+      });
+
+      cardElement.classList.add("selected");
+      const activeDot = cardElement.querySelector(".radio-indicator");
+      if (activeDot) {
+        activeDot.innerHTML = '<div class="w-3 h-3 bg-emerald-700 rounded-full"></div>';
+      }
+
+      // Populate hidden inputs
+      document.getElementById("input-" + questionId).value = value;
+    }
+
+    // Capture selections: Scale Circle
+    function selectScaleOption(questionId, value, buttonElement) {
+      surveyAnswers[questionId] = value;
+
+      const container = buttonElement.parentNode;
+      const btns = container.querySelectorAll(".scale-btn");
+      btns.forEach(b => b.classList.remove("selected"));
+
+      buttonElement.classList.add("selected");
+      document.getElementById("input-" + questionId).value = value;
+    }
+
+    // Capture selections: Checkbox Group (With max 2 constraint)
+    function toggleCheckboxOption(questionId, value, cardElement) {
+      const index = surveyAnswers.q8.indexOf(value);
+      
+      if (index > -1) {
+        // Already selected - unselect it
+        surveyAnswers.q8.splice(index, 1);
+        cardElement.classList.remove("selected");
+        cardElement.querySelector(".checkbox-indicator").innerHTML = "";
+      } else {
+        // Check selection limit constraint of 2
+        let currentTotal = surveyAnswers.q8.length;
+        if (surveyAnswers.q8_other) {
+          currentTotal += 1; // Count custom other too
+        }
+
+        if (currentTotal >= 2) {
+          showWarningFlash("You may select up to a maximum of two concerns. Deselect an option to select a new one.");
+          return;
+        }
+
+        surveyAnswers.q8.push(value);
+        cardElement.classList.add("selected");
+        cardElement.querySelector(".checkbox-indicator").innerHTML = '<i class="fa-solid fa-check text-xs text-emerald-800"></i>';
+      }
+      
+      updateHiddenCheckboxFields();
+    }
+
+    // Other checkbox logic
+    let otherConcernSelected = false;
+    function toggleOtherConcernClick() {
+      const checkboxIndicator = document.getElementById("other-checkbox-indicator");
+      const cardElement = document.getElementById("other-concern-card");
+      
+      if (otherConcernSelected) {
+        otherConcernSelected = false;
+        surveyAnswers.q8_other = "";
+        document.getElementById("input-q8-other").value = "";
+        cardElement.classList.remove("selected");
+        checkboxIndicator.innerHTML = "";
+      } else {
+        let currentTotal = surveyAnswers.q8.length;
+        if (currentTotal >= 2) {
+          showWarningFlash("You may select up to a maximum of two concerns. Deselect an option to select a new one.");
+          return;
+        }
+        otherConcernSelected = true;
+        cardElement.classList.add("selected");
+        checkboxIndicator.innerHTML = '<i class="fa-solid fa-check text-xs text-emerald-800"></i>';
+        document.getElementById("input-q8-other").focus();
+      }
+      updateHiddenCheckboxFields();
+    }
+
+    function onOtherConcernInput() {
+      const text = document.getElementById("input-q8-other").value.trim();
+      if (text && !otherConcernSelected) {
+        let currentTotal = surveyAnswers.q8.length;
+        if (currentTotal >= 2) {
+          document.getElementById("input-q8-other").value = "";
+          showWarningFlash("You may select up to a maximum of two concerns. Deselect an option to select a new one.");
+          return;
+        }
+        otherConcernSelected = true;
+        document.getElementById("other-concern-card").classList.add("selected");
+        document.getElementById("other-checkbox-indicator").innerHTML = '<i class="fa-solid fa-check text-xs text-emerald-800"></i>';
+      }
+      surveyAnswers.q8_other = text;
+      updateHiddenCheckboxFields();
+    }
+
+    function updateHiddenCheckboxFields() {
+      // Map choices into primary and secondary fields for native Form post
+      const pField = document.getElementById("input-q8-primary");
+      const sField = document.getElementById("input-q8-secondary");
+      const oField = document.getElementById("input-q8-other-val");
+
+      pField.value = surveyAnswers.q8[0] || "";
+      sField.value = surveyAnswers.q8[1] || "";
+      oField.value = surveyAnswers.q8_other || "";
+    }
+
+    function showWarningFlash(msg) {
+      const warn = document.getElementById("concern-count-warning");
+      warn.innerText = msg;
+      warn.classList.remove("text-red-600");
+      warn.classList.add("text-rose-700", "font-black", "scale-105");
+      setTimeout(() => {
+        warn.classList.remove("text-rose-700", "font-black", "scale-105");
+        warn.classList.add("text-red-600");
+      }, 2000);
+    }
+
+    // Dynamic configuration slider
+    function toggleConfigPanel() {
+      const panel = document.getElementById("config-panel");
+      panel.classList.toggle("translate-x-full");
+    }
+
+    function saveConfig() {
+      // Collect parameters from configuration screen
+      const url = document.getElementById("config-form-url").value.trim();
+      const mapName = document.getElementById("map-name").value.trim();
+      const mapEmail = document.getElementById("map-email").value.trim();
+      const mapQ3 = document.getElementById("map-q3").value.trim();
+      const mapQ4 = document.getElementById("map-q4").value.trim();
+      const mapQ5 = document.getElementById("map-q5").value.trim();
+      const mapQ6 = document.getElementById("map-q6").value.trim();
+      const mapQ7 = document.getElementById("map-q7").value.trim();
+      const mapQ8p = document.getElementById("map-q8-primary").value.trim();
+      const mapQ8s = document.getElementById("map-q8-secondary").value.trim();
+      const mapQ8o = document.getElementById("map-q8-other").value.trim();
+      const mapQ9 = document.getElementById("map-q9").value.trim();
+      const mapQ10 = document.getElementById("map-q10").value.trim();
+
+      const conf = {
+        actionUrl: url,
+        name: mapName,
+        email: mapEmail,
+        q3: mapQ3,
+        q4: mapQ4,
+        q5: mapQ5,
+        q6: mapQ6,
+        q7: mapQ7,
+        q8_p: mapQ8p,
+        q8_s: mapQ8s,
+        q8_o: mapQ8o,
+        q9: mapQ9,
+        q10: mapQ10
+      };
+
+      localStorage.setItem("ibca_survey_config", JSON.stringify(conf));
+      applyConfigToForm(conf);
+      toggleConfigPanel();
+    }
+
+    function loadSavedConfig() {
+      const saved = localStorage.getItem("ibca_survey_config");
+      if (saved) {
+        const conf = JSON.parse(saved);
+        document.getElementById("config-form-url").value = conf.actionUrl || "";
+        document.getElementById("map-name").value = conf.name || "";
+        document.getElementById("map-email").value = conf.email || "";
+        document.getElementById("map-q3").value = conf.q3 || "";
+        document.getElementById("map-q4").value = conf.q4 || "";
+        document.getElementById("map-q5").value = conf.q5 || "";
+        document.getElementById("map-q6").value = conf.q6 || "";
+        document.getElementById("map-q7").value = conf.q7 || "";
+        document.getElementById("map-q8-primary").value = conf.q8_p || "";
+        document.getElementById("map-q8-secondary").value = conf.q8_s || "";
+        document.getElementById("map-q8-other").value = conf.q8_o || "";
+        document.getElementById("map-q9").value = conf.q9 || "";
+        document.getElementById("map-q10").value = conf.q10 || "";
+        applyConfigToForm(conf);
+      } else {
+        // Fallback default mock mappings
+        const defaults = {
+          actionUrl: "https://docs.google.com/forms/d/e/1FAIpQLSfp-DummyFormId123/formResponse",
+          name: "entry.1000001",
+          email: "entry.1000002",
+          q3: "entry.1000003",
+          q4: "entry.1000004",
+          q5: "entry.1000005",
+          q6: "entry.1000006",
+          q7: "entry.1000007",
+          q8_p: "entry.1000008",
+          q8_s: "entry.1000009",
+          q8_o: "entry.1000010",
+          q9: "entry.1000011",
+          q10: "entry.1000012"
         };
+        applyConfigToForm(defaults);
+      }
+    }
 
+    function applyConfigToForm(conf) {
+      const form = document.getElementById("pulse-form");
+      form.action = conf.actionUrl;
 
-        /* NAVIGATION LOGIC */
-        function startSurvey() {
-            goToScreen(1);
-            document.getElementById('header-section').style.display = 'block';
-            document.getElementById('nav-section').style.display = 'flex';
-        }
+      // Assign input attributes dynamically
+      document.getElementById("input-name").name = conf.name;
+      document.getElementById("input-email").name = conf.email;
+      document.getElementById("input-q3").name = conf.q3;
+      document.getElementById("input-q4").name = conf.q4;
+      document.getElementById("input-q5").name = conf.q5;
+      document.getElementById("input-q6").name = conf.q6;
+      document.getElementById("input-q7").name = conf.q7;
+      document.getElementById("input-q8-primary").name = conf.q8_p;
+      document.getElementById("input-q8-secondary").name = conf.q8_s;
+      document.getElementById("input-q8-other-val").name = conf.q8_o;
+      document.getElementById("input-q9").name = conf.q9;
+      document.getElementById("input-q10").name = conf.q10;
+    }
 
+    // Submit handler overriding default page reload
+    document.getElementById("pulse-form").addEventListener("submit", function(e) {
+      surveyAnswers.q10 = document.getElementById("input-q10").value.trim();
+      formSubmittedState = true;
+    });
 
-        function goToScreen(index) {
-            // Hide all screens
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            
-            // Show new screen
-            const screenId = 'screen-' + screens[index];
-            document.getElementById(screenId).classList.add('active');
-            
-            currentScreenIndex = index;
-            updateUI();
-        }
+    function onIframeLoaded() {
+      if (formSubmittedState) {
+        showThankYouDashboard();
+      }
+    }
 
+    function showThankYouDashboard() {
+      // Transition out the card
+      document.getElementById(steps[currentStepIndex]).classList.remove("active");
+      
+      // Compute dashboard analytics incorporating input values
+      recalculateDashboardValues();
 
-        function nextScreen() {
-            if (currentScreenIndex < screens.length - 1) {
-                // If it's the review screen, triggers submit via different button
-                if (screens[currentScreenIndex] === 'review') return;
-                
-                // If moving from q6 to review, capture text
-                if (screens[currentScreenIndex] === 'q6') {
-                    responses.supportNeeded = document.getElementById('supportNeeded').value;
-                    populateReview();
-                }
+      document.getElementById("step-thankyou").classList.add("active");
+      document.getElementById("tracker-label").innerText = "RESULTS RECEIVED";
+      document.getElementById("time-badge").classList.add("hidden");
+      document.getElementById("progress-bar").style.width = "100%";
+      document.getElementById("progress-text").innerText = "Completed";
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 
+    function recalculateDashboardValues() {
+      // Dynamic computation logic mapping inputted answers
+      const numConfidence = parseFloat(surveyAnswers.q4 || "3");
+      const averageConf = ((3.8 * 45) + numConfidence) / 46;
+      document.getElementById("dash-conf-val").innerText = averageConf.toFixed(1);
 
-                goToScreen(currentScreenIndex + 1);
-            }
-        }
+      let savedNum = 1; // Default
+      if (surveyAnswers.q7 === "3-5 hours") savedNum = 4;
+      else if (surveyAnswers.q7 === "6-10 hours") savedNum = 8;
+      else if (surveyAnswers.q7 === "10+ hours") savedNum = 12;
+      const averageTime = ((4.2 * 45) + savedNum) / 46;
+      document.getElementById("dash-time-val").innerText = averageTime.toFixed(1) + " hrs";
+    }
 
+    function restartSurvey() {
+      formSubmittedState = false;
+      surveyAnswers = {
+        name: "", email: "", q3: "", q4: "", q5: "", q6: "", q7: "", q8: [], q8_other: "", q9: "", q10: ""
+      };
+      otherConcernSelected = false;
 
-        function prevScreen() {
-            if (currentScreenIndex > 1) {
-                goToScreen(currentScreenIndex - 1);
-            }
-        }
+      // Clear input fields
+      document.getElementById("input-name").value = "";
+      document.getElementById("input-email").value = "";
+      document.getElementById("input-q10").value = "";
+      document.getElementById("input-q8-other").value = "";
 
+      // Clear UI selections
+      document.querySelectorAll(".option-card").forEach(c => {
+        c.classList.remove("selected");
+        const rad = c.querySelector(".radio-indicator");
+        const chk = c.querySelector(".checkbox-indicator");
+        if (rad) rad.innerHTML = "";
+        if (chk) chk.innerHTML = "";
+      });
+      document.querySelectorAll(".scale-btn").forEach(b => b.classList.remove("selected"));
 
-        function updateUI() {
-            const screenName = screens[currentScreenIndex];
-            
-            // Progress Bar (Screens 1 to 6 are questions)
-            const progress = (Math.min(currentScreenIndex, 6) / 6) * 100;
-            document.getElementById('progress-bar').style.width = progress + '%';
-            
-            if (currentScreenIndex >= 1 && currentScreenIndex <= 6) {
-                document.getElementById('step-text').innerText = `Question ${currentScreenIndex} of 6`;
-                document.getElementById('header-section').style.display = 'block';
-            } else {
-                document.getElementById('header-section').style.display = 'none';
-            }
-
-
-            // Buttons
-            const btnBack = document.getElementById('btn-back');
-            const btnNext = document.getElementById('btn-next');
-            const btnSubmit = document.getElementById('btn-submit');
-            const nav = document.getElementById('nav-section');
-
-
-            btnBack.disabled = (currentScreenIndex <= 1);
-            
-            // Show/Hide Submit Button
-            if (screenName === 'review') {
-                btnNext.style.display = 'none';
-                btnSubmit.style.display = 'flex';
-            } else if (screenName === 'submitting' || screenName === 'thanks') {
-                nav.style.display = 'none';
-            } else {
-                btnNext.style.display = 'flex';
-                btnSubmit.style.display = 'none';
-            }
-
-
-            validateScreen();
-        }
-
-
-        function selectOption(element, field) {
-            // Unselect siblings
-            const parent = element.parentElement;
-            parent.querySelectorAll('.option-card').forEach(card => card.classList.remove('selected'));
-            
-            // Select this one
-            element.classList.add('selected');
-            responses[field] = element.getAttribute('data-val');
-            
-            // Re-validate to enable "Next" button
-            validateScreen();
-        }
-
-
-        function validateScreen() {
-            const screenName = screens[currentScreenIndex];
-            const btnNext = document.getElementById('btn-next');
-            
-            let isValid = true;
-            if (screenName === 'q1' && !responses.confidence) isValid = false;
-            if (screenName === 'q2' && !responses.comfort) isValid = false;
-            if (screenName === 'q3' && !responses.concern) isValid = false;
-            if (screenName === 'q4' && !responses.usefulness) isValid = false;
-            if (screenName === 'q5' && !responses.followUpConsent) isValid = false;
-            // q6 is optional
-
-
-            btnNext.disabled = !isValid;
-        }
-
-
-        function populateReview() {
-            const reviewDiv = document.getElementById('review-content');
-            
-            reviewDiv.innerHTML = `
-                <div class="review-item">
-                    <div class="review-q">Confidence in AI</div>
-                    <div class="review-a">${responses.confidence}</div>
-                </div>
-                <div class="review-item">
-                    <div class="review-q">Comfort using Gemini</div>
-                    <div class="review-a">${responses.comfort}</div>
-                </div>
-                <div class="review-item">
-                    <div class="review-q">Biggest concern</div>
-                    <div class="review-a">${responses.concern}</div>
-                </div>
-                <div class="review-item">
-                    <div class="review-q">Usefulness in role</div>
-                    <div class="review-a">${responses.usefulness}</div>
-                </div>
-                <div class="review-item">
-                    <div class="review-q">Willing to follow-up</div>
-                    <div class="review-a">${responses.followUpConsent}</div>
-                </div>
-                <div class="review-item">
-                    <div class="review-q">Additional support requested</div>
-                    <div class="review-a">${responses.supportNeeded || "None specified"}</div>
-                </div>
-            `;
-        }
-
-
-        /* DATA SUBMISSION */
-        function submitSurvey() {
-            goToScreen(8); // Submitting screen
-
-
-            const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSfxYsAnTbYC5tliXg1PaZoLrd-11wsjicGHJdYa7ktTrno-kA/formResponse";
-
-
-            const form = document.createElement("form");
-            form.action = FORM_URL;
-            form.method = "POST";
-            form.target = "hidden_iframe";
-            form.style.display = "none";
-
-
-            const fields = {
-                "entry.1206601711": responses.confidence || "",
-                "entry.2143954893": responses.comfort || "",
-                "entry.286265625": responses.concern || "",
-                "entry.621624583": responses.usefulness || "",
-                "entry.1849376296": responses.followUpConsent || "",
-                "entry.268264359": responses.supportNeeded || ""
-            };
-
-
-            Object.keys(fields).forEach(function(name) {
-                const input = document.createElement("input");
-                input.type = "hidden";
-                input.name = name;
-                input.value = fields[name];
-                form.appendChild(input);
-            });
-
-
-            let iframe = document.getElementById("hidden_iframe");
-            if (!iframe) {
-                iframe = document.createElement("iframe");
-                iframe.name = "hidden_iframe";
-                iframe.id = "hidden_iframe";
-                iframe.style.display = "none";
-                document.body.appendChild(iframe);
-            }
-
-
-            document.body.appendChild(form);
-            form.submit();
-
-
-            setTimeout(function() {
-                goToScreen(9); // Thanks screen
-            }, 1200);
-        }
-    </script>
+      // Return back to welcome slide
+      document.getElementById("step-thankyou").classList.remove("active");
+      currentStepIndex = 0;
+      document.getElementById(steps[currentStepIndex]).classList.add("active");
+      document.getElementById("time-badge").classList.remove("hidden");
+      updateProgressBar();
+    }
+  </script>
 </body>
 </html>
